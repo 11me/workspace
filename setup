@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+update() {
+  apt-get update && apt-get upgrade -y
+}
+
+# insttall all man pages
+unminimize() {
+  echo "Uminimizing"
+  yes | unminizime
+  apt install man -y
+}
+
+# clone my dotfiles from github
+clone_dot() {
+  apt install git -y
+  git clone "https://github.com/11me/dotfiles" "/home/$username/dotfiles"
+  chown -R "$username:$username" "/home/$username/dotfiles"
+}
+
+# create symlinks from my dotfiles direcotry
+create_symlinks() {
+  ln -sf "/home/$username/dotfiles/.profile" \
+    "/home/$username/.profile" && chown "$username:$username" "/home/$username/.profile"
+
+  ln -sf "/home/$username/dotfiles/.dircolors" \
+    "/home/$username/.dircolors" && chown "$username:$username" "/home/$username/.dircolors"
+
+  ln -sf "/home/$username/dotfiles/.bashrc" \
+    "/home/$username/.bashrc" && chown "$username:$username" "/home/$username/.bashrc"
+
+  ln -sf "/home/$username/dotfiles/.config/tmux/.tmux.conf" \
+    "/home/$username/.tmux.conf" && chown "$username:$username" "/home/$username/.tmux.conf"
+
+  ln -sf "/home/$username/dotfiles/.config" \
+    "/home/$username/.config" && chown -R "/home/$username/dotfiles/.config"
+
+  ln -sf "/home/$username/dotfiles/.config/vim" \
+    "/home/$username/.vim" && chown -R "/home/$username/.vim"
+
+  ln -sf "/home/$username/dotfiles/.local" \
+    "/home/$username/.local" && chown -R "/home/$username/.local"
+}
+
+install_sudo() {
+  apt-get install sudo -y
+}
+
+get_username() {
+  read -r -p "Enter a username: " username
+}
+
+get_password() {
+  stty -echo
+
+  printf "New password:"
+  read -r pass1
+  printf "\nRetype password:"
+  read -r pass2
+
+  while [ "$pass1" != "$pass2" ];
+  do
+    printf "\nPasswords do not match, try again..."
+    printf "\nNew password:"
+    read -r pass1
+    printf "\nRetype password:"
+    read -r pass2
+  done
+
+  stty echo
+}
+
+install_programs() {
+  apt-get install vim tmux curl -y
+}
+
+create_user() {
+  useradd -m "$username" -s "$(command -v bash)"
+  echo "$username:$pass1" | chpasswd
+  usermod -aG sudo "$username"
+  unset pass1 pass2
+
+  # save the username
+  echo "$username" > .workspace
+}
+
+change_user() {
+  su - "$username"
+}
+
+# install vimplug for my vim plugins
+vim_plug() {
+  sudo -u "$username" curl -fLo "/home/$username/.vim/autoload/plug.vim" --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+}
+
+main() {
+  get_username
+  get_password
+  clear
+  create_user
+  update
+  unminimize
+  install_programs
+  clone_dot
+  create_symlinks
+  install_sudo
+  vim_plug
+  change_user
+  clear
+}
+
+# check if setup script already run
+if [ -e ".workspace" ]; then
+  username="$(cat '.workspace')"
+  su - "$username"
+else
+  main
+fi
