@@ -1,0 +1,37 @@
+services:
+  wireguard:
+    image: linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+    - NET_ADMIN
+    - SYS_MODULE
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Moscow
+    - SERVERURL=auto
+    - SERVERPORT=51820
+    - PEERS=laptop,mobile
+    - PEERDNS=auto #optional
+    - INTERNAL_SUBNET=10.10.10.0 #optional
+    - ALLOWEDIPS=0.0.0.0/0 #optional (allow all ips)
+    - LOG_CONFS=true
+    volumes:
+    - ./wireguard/config:/config
+    - /lib/modules:/lib/modules
+    ports:
+    - 51820:51820/udp
+    sysctls:
+    - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+  openvpn:
+    cap_add:
+     - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    ports:
+     - "1194:1194/udp"
+    restart: always
+    volumes:
+     - ./openvpn-data/conf:/etc/openvpn
+
