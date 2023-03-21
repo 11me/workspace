@@ -1,19 +1,24 @@
 # Workspace container
-This is source `dockerfile` for creating my workspace container.
-It pulls my dotfiles from github and setups the environment.
 
-Check my [dotfiles](https://github.com/11me/dotfiles).
+```yaml
+| Number | Program Name | Version |
+|--------|--------------|---------|
+| 1      | Helm         | 3.8.2   |
+| 2      | Helmfile     | 0.144.0 |
+| 3      | AWS CLI      | latest  |
+| 4      | kubectl      | 1.24.0  |
+| 5      | Neovim       | 0.8.3   |
+| 6      | Go           | 1.20.3  |
 
-## Install
 ```
-$ git clone https://github.com/11me/workspace
 
-$ cd workspace
+```sh
+docker build --rm -t 11me/workspace .
 
-$ docker build --rm .
-```
-
-## Or pull from dockerhub
-```
-$ docker run -it 11me/workspace
+docker run --name workspace -it --network host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /home/lime:/home/lime \
+    -v /tmp/.X11-unix/tmp/.X11-unix \
+    -e DISPLAY=$DISPLAY \
+    11me/workspace
 ```
