@@ -4,7 +4,17 @@ FROM ubuntu:latest
 ENV LANG=C.UTF-8
 
 RUN apt-get update && \
-    apt-get install -y sudo xclip curl tmux unzip git ssh build-essential make fontconfig && \
+    apt-get install -y \
+        sudo xclip \
+        curl tmux \
+        unzip git \
+        man iproute2 \
+        net-tools dnsutils \
+        tcpdump \
+        ripgrep \
+        ssh build-essential \
+        make fontconfig && \
+        yes | unminimize && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g yarn && \
